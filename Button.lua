@@ -10,7 +10,7 @@ function Button(text, func, x, y, color_r, color_g, color_b)
 		x = x or 0,
 		y = y or 0,
 
-		launch_button = function (self)
+		launch_button = function(self)
 				self.func()
 			end,
 		
@@ -25,7 +25,6 @@ function Button(text, func, x, y, color_r, color_g, color_b)
 			local font = love.graphics.newFont(18)
 			love.graphics.setFont(font)
 			love.graphics.print(self.text, self.x, self.y)
-			-- love.graphics.setColor(0, 0, 0)
 		end
 	}
 end
