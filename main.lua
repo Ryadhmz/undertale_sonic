@@ -1,12 +1,12 @@
+---@diagnostic disable: undefined-global
 local love = require "love"
 local button = require "Button"
--- local opening = require "Opening"
 
 local game = {
 	state = {
-		opening = true,
+		opening = false,
 		menu = false,
-		running = false,
+		running = true,
 		ended = false,
 	},
 }
@@ -15,6 +15,32 @@ local buttons = {
 	id_button = 0, -- 0 : play, 1 : exit --
 	menu_state = {}
 }
+
+local sonic = {
+	x = love.graphics.getWidth() / 2 - 30,
+	y = 100,
+	sprite = {
+		img_sprite = love.graphics.newImage("img/sprite/sonic_sprite.png"),
+		SPRITE_WIDTH = 280,
+		SPRITE_HEIGHT = 90,
+		QUAD_WIDTH = 280 / 7,
+		QUAD_HEIGHT = 90,
+		bubble_sprite = love.graphics.newImage("img/sprite/bubble.png")
+	},
+	animation = {
+		idle = true,
+		frame = 1,
+		max_frames = 7,
+		speed = 30,
+		timer = 0,1
+	}
+}
+
+local fight_buttons = {
+	sprite = love.graphics.newImage("img/sprite/fight_button.png")
+}
+
+Quads = {}
 
 local opening_i = 0
 
@@ -52,8 +78,8 @@ local function printmenu()
 		love.graphics.pop()
 		buttons.menu_state.start_game:draw()
 		buttons.menu_state.exit:draw()
-		love.graphics.setColor(240 / 255, 128 / 255, 128 / 255)
-		love.graphics.print("Dr.Robotnik", 265, love.graphics.getHeight() / 2 - 50)
+		love.graphics.setColor(1, 0, 0)
+		love.graphics.print("Dr.Eggman", 265, love.graphics.getHeight() / 2 - 50)
 end
 
 local function animMenu()
@@ -89,6 +115,11 @@ function love.load()
 	Ruine = love.graphics.newImage("img/menu/porte_ruine.png")
 	buttons.menu_state.start_game = button("Play", startNewGame, 160, love.graphics.getHeight() / 2, 1, 1, 0)
 	buttons.menu_state.exit = button("Exit", love.event.quit, love.graphics.getWidth() - 200, love.graphics.getHeight() / 2)
+
+	-- running --
+	for i = 1, 7 do
+		Quads[i] = love.graphics.newQuad(sonic.sprite.QUAD_WIDTH * (i - 1), 0, sonic.sprite.QUAD_WIDTH, sonic.sprite.QUAD_HEIGHT, sonic.sprite.SPRITE_WIDTH, sonic.sprite.SPRITE_HEIGHT)
+	end
 end
 
 function love.update(dt)
@@ -110,5 +141,18 @@ function love.draw()
 	end
 	if game.state.opening == true then
 		opening()
+	end
+	if game.state.running == true then
+		love.graphics.draw(sonic.sprite.img_sprite, Quads[1], sonic.x, sonic.y)
+		love.graphics.rectangle("line", 50 , love.graphics.getHeight() / 2.5, love.graphics.getWidth() - 100, love.graphics.getHeight() / 2.5) -- atk --
+		love.graphics.rectangle("line", 240 , love.graphics.getHeight() / 2.25, love.graphics.getWidth() - 500, love.graphics.getHeight() / 3) -- defense --
+		love.graphics.push()
+		love.graphics.scale(0.3)
+		love.graphics.draw(fight_buttons.sprite, love.graphics.getWidth() / 2 + 420, love.graphics.getHeight() * 2.4)
+		love.graphics.pop()
+		love.graphics.push()
+		love.graphics.scale(0.2)
+		love.graphics.draw(sonic.sprite.bubble_sprite, sonic.x + 1500, sonic.y + 300)
+		love.graphics.pop()
 	end
 end
