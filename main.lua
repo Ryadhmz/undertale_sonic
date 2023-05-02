@@ -1,11 +1,13 @@
 local love = require "love"
 local button = require "Button"
+-- local opening = require "Opening"
 
 local game = {
 	state = {
-		menu = true,
+		opening = true,
+		menu = false,
 		running = false,
-		ended = false,	
+		ended = false,
 	},
 }
 
@@ -14,10 +16,22 @@ local buttons = {
 	menu_state = {}
 }
 
+local opening_i = 0
+
 local function changeGameState(state)
+	game.state["opening"] = state == "opening"
 	game.state["menu"] = state == "menu"
 	game.state["running"] = state == "running"
 	game.state["ended"] = state == "ended"
+end
+
+local function opening()
+	local opening_img = love.graphics.newImage("img/opening/undertale_opening.png")
+	Sounds.zehaha:play()
+	love.graphics.push()
+	love.graphics.scale(0.6)
+	love.graphics.draw(opening_img, 20, -220)
+	love.graphics.pop()
 end
 
 local function startNewGame()
@@ -67,7 +81,6 @@ end
 end
 
 function love.load()
-
 	Sounds = {}
 	Sounds.zehaha = love.audio.newSource("sounds/zehaha.mp3", "static")
 	Sounds.rain = love.audio.newSource("sounds/rain.mp3", "stream")
@@ -79,13 +92,23 @@ function love.load()
 end
 
 function love.update(dt)
+	if game.state["opening"] == true then 
+		opening_i = opening_i + dt
+		if opening_i >= 4.7 then
+			Sounds.zehaha:stop()
+			changeGameState("menu")
+		end
+	end
 	if game.state["menu"] == true then
 		animMenu()
-end
+	end
 end
 
 function love.draw()
 	if game.state.menu == true then
 		printmenu()
+	end
+	if game.state.opening == true then
+		opening()
 	end
 end
