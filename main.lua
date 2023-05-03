@@ -1,14 +1,22 @@
----@diagnostic disable: undefined-global
+---@diagnostic disable: undefined-global, lowercase-global
 local love = require "love"
 local button = require "Button"
+local Fight_mod = require "Fight"
 
 local game = {
 	state = {
-		opening = false,
+		opening = true,
 		menu = false,
-		running = true,
+		running = false,
 		ended = false,
 	},
+	phase = {
+		defense = false,
+		atk = false,
+		atk_phase = false,
+		dead_sonic = false,
+		nb_phase = 0,
+	}
 }
 
 local buttons = {
@@ -36,13 +44,27 @@ local sonic = {
 	}
 }
 
-local fight_buttons = {
-	sprite = love.graphics.newImage("img/sprite/fight_button.png")
-}
+local i_frame = 2
+
+local fight = {}
+
+-- local fight_buttons = {
+-- 	sprite = love.graphics.newImage("img/sprite/fight_button.png")
+-- }
 
 Quads = {}
 
+Quads_fight = {}
+
 local opening_i = 0
+
+local x_bar = 60
+
+rectangle_x_limit = 600
+
+local timer_damage = 0
+
+timer_fight = 0
 
 local function changeGameState(state)
 	game.state["opening"] = state == "opening"
@@ -62,6 +84,7 @@ end
 
 local function startNewGame()
 	changeGameState("running")
+	fight.go:change_phase("defense")
 end
 
 local function printmenu()
@@ -80,6 +103,7 @@ local function printmenu()
 		buttons.menu_state.exit:draw()
 		love.graphics.setColor(1, 0, 0)
 		love.graphics.print("Dr.Eggman", 265, love.graphics.getHeight() / 2 - 50)
+		love.graphics.setColor(1, 1, 1)
 end
 
 local function animMenu()
@@ -120,6 +144,12 @@ function love.load()
 	for i = 1, 7 do
 		Quads[i] = love.graphics.newQuad(sonic.sprite.QUAD_WIDTH * (i - 1), 0, sonic.sprite.QUAD_WIDTH, sonic.sprite.QUAD_HEIGHT, sonic.sprite.SPRITE_WIDTH, sonic.sprite.SPRITE_HEIGHT)
 	end
+	for i = 1, 2 do
+		Quads_fight[i] = love.graphics.newQuad(924 / 2 * (i - 1), 0, 924 / 2, 177, 924, 177)
+	end
+	fight.go = Fight_mod(sonic, game)
+	local fight_frame = 2
+	i_frame = 2
 end
 
 function love.update(dt)
@@ -133,6 +163,33 @@ function love.update(dt)
 	if game.state["menu"] == true then
 		animMenu()
 	end
+	if game.phase.defense == true then
+		fight_frame = 1
+	elseif game.phase.atk == true or game.phase.atk_phase == true  then
+		fight_frame = 2
+	end
+	if game.phase.atk_phase == true then
+		x_bar = x_bar + dt * 140
+	end
+	if game.phase.dead_sonic == true then
+		timer_damage = timer_damage + dt
+	end
+	if game.phase.defense == true then
+	timer_fight = timer_fight + dt
+	else
+		timer_fight = 0
+	end
+	if game.state.running == true then
+		if game.phase.dead_sonic == true then
+			i_frame = 2
+		else
+			if math.abs(i_frame) < 7 then
+				i_frame = i_frame + dt / 1.5
+			else
+				i_frame = 2
+		end
+	end
+		end
 end
 
 function love.draw()
@@ -143,16 +200,40 @@ function love.draw()
 		opening()
 	end
 	if game.state.running == true then
-		love.graphics.draw(sonic.sprite.img_sprite, Quads[1], sonic.x, sonic.y)
-		love.graphics.rectangle("line", 50 , love.graphics.getHeight() / 2.5, love.graphics.getWidth() - 100, love.graphics.getHeight() / 2.5) -- atk --
-		love.graphics.rectangle("line", 240 , love.graphics.getHeight() / 2.25, love.graphics.getWidth() - 500, love.graphics.getHeight() / 3) -- defense --
+		local hp = love.graphics.newImage("img/sprite/hp_1.1.png")
 		love.graphics.push()
-		love.graphics.scale(0.3)
-		love.graphics.draw(fight_buttons.sprite, love.graphics.getWidth() / 2 + 420, love.graphics.getHeight() * 2.4)
+		love.graphics.scale(1.5)
+		love.graphics.draw(hp, 285 , love.graphics.getHeight() / 2.4)
 		love.graphics.pop()
-		love.graphics.push()
-		love.graphics.scale(0.2)
-		love.graphics.draw(sonic.sprite.bubble_sprite, sonic.x + 1500, sonic.y + 300)
-		love.graphics.pop()
+		fight.go:sonic_print(i_frame)
+		fight.go:fight_button_print(fight_frame)
+
+		if game.phase.atk == true then
+			fight.go:ft_atk(fight_frame)
+		end
+		if game.phase.atk_phase == true then
+			fight.go:ft_atk_phase(x_bar)
+			if x_bar > rectangle_x_limit then
+				fight.go:change_phase("defense")
+				x_bar = 50
+			end
+		end
+		if game.phase.defense == true then
+			fight.go:draw_rectangle_defense()
+			fight.go:fight_scenario(timer_fight)
+		end
+		if game.phase.dead_sonic == true then
+			fight.go:damage(timer_damage)
+			if timer_damage > 3 then
+				changeGameState("ended")
+			end
+		end
+	end
+	if game.state.ended == true then
+		local end_image = love.graphics.newImage("img/end.jpg")
+			love.graphics.draw(end_image, 80, -40)
+			if timer_damage > 7 then
+				love.event.quit()
+			end
 	end
 end
