@@ -1,7 +1,4 @@
 local love = require "love"
-local Enemy_Circle = require "Enemy_Circle"
-
-Enemy = {}
 
 function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 	return {
@@ -119,16 +116,7 @@ function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 				self:sonic_bubble("gl bg")
 			end
 			if timer_fight >= 2 then
-				for i = 1, 4 do
-					table.insert(Enemy, 1, Enemy_Circle(i + 1))
-				end
-				for i = 1, 4 do
-					Enemy[i]:move(self.x_egg, self.y_egg)
-					Enemy[i]:draw()
-					if i == 3 then
-						i = 1
-					end
-				end
+				game.phase.nb_phase = 1
 				self:move_egg()
 			end
 			-- elseif timer_fight >= 2 and timer_fight < 10 then

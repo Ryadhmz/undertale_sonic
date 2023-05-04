@@ -3,6 +3,12 @@ local love = require "love"
 local button = require "Button"
 local Fight_mod = require "Fight"
 
+math.randomseed(os.time())
+
+local frame_second = 1 / 60
+
+local accumulator = 0.0
+
 local game = {
 	state = {
 		opening = false,
@@ -153,8 +159,12 @@ function love.load()
 end
 
 function love.update(dt)
+	accumulator = accumulator + dt
+  	if accumulator >= frame_second then
+    	accumulator = accumulator - frame_second
+  end
 	if game.state["opening"] == true then 
-		opening_i = opening_i + dt
+		opening_i = opening_i + accumulator
 		if opening_i >= 4.7 then
 			Sounds.zehaha:stop()
 			changeGameState("menu")
@@ -169,13 +179,13 @@ function love.update(dt)
 		fight_frame = 2
 	end
 	if game.phase.atk_phase == true then
-		x_bar = x_bar + dt * 140
+		x_bar = x_bar + accumulator * 140
 	end
 	if game.phase.dead_sonic == true then
-		timer_damage = timer_damage + dt
+		timer_damage = timer_damage + accumulator
 	end
 	if game.phase.defense == true then
-	timer_fight = timer_fight + dt
+	timer_fight = timer_fight + accumulator
 	else
 		timer_fight = 0
 	end
@@ -184,7 +194,7 @@ function love.update(dt)
 			i_frame = 2
 		else
 			if math.abs(i_frame) < 7 then
-				i_frame = i_frame + dt / 1.5
+				i_frame = i_frame + accumulator / 2.5
 			else
 				i_frame = 2
 		end
