@@ -2,6 +2,8 @@
 local love = require "love"
 local button = require "Button"
 local Fight_mod = require "Fight"
+local Enemy_Circle = require "Enemy_Circle"
+
 
 math.randomseed(os.time())
 
@@ -11,13 +13,14 @@ local accumulator = 0.0
 
 local game = {
 	state = {
-		opening = false,
+		opening = true,
 		menu = false,
-		running = true,
+		running = false,
 		ended = false,
+		game_over = false
 	},
 	phase = {
-		defense = true,
+		defense = false,
 		atk = false,
 		atk_phase = false,
 		dead_sonic = false,
@@ -54,9 +57,10 @@ local i_frame = 2
 
 local fight = {}
 
--- local fight_buttons = {
--- 	sprite = love.graphics.newImage("img/sprite/fight_button.png")
--- }
+local enemies = {
+	Enemy_Circle(1, 250, 250),
+	Enemy_Circle(1, 450, 350)
+}
 
 Quads = {}
 
@@ -77,6 +81,7 @@ local function changeGameState(state)
 	game.state["menu"] = state == "menu"
 	game.state["running"] = state == "running"
 	game.state["ended"] = state == "ended"
+	game.state["game_over"] = state == "game_over"
 end
 
 local function opening()
@@ -159,10 +164,7 @@ function love.load()
 end
 
 function love.update(dt)
-	accumulator = accumulator + dt
-  	if accumulator >= frame_second then
-    	accumulator = accumulator - frame_second
-  end
+	accumulator = dt
 	if game.state["opening"] == true then 
 		opening_i = opening_i + accumulator
 		if opening_i >= 4.7 then
@@ -185,7 +187,7 @@ function love.update(dt)
 		timer_damage = timer_damage + accumulator
 	end
 	if game.phase.defense == true then
-	timer_fight = timer_fight + accumulator
+		timer_fight = timer_fight + accumulator
 	else
 		timer_fight = 0
 	end
@@ -199,7 +201,21 @@ function love.update(dt)
 				i_frame = 2
 		end
 	end
+		if game.phase.nb_phase == 1 then
+			for i = 1, #enemies do
+				if enemies[i].checkCircleTouched(fight.go, enemies[i].x, enemies[i].y, enemies[i].radius) == false then
+					enemies[i]:move(fight.go.x_egg, fight.go.y_egg)
+				else
+					changeGameState("game_over")
+				end
+			end
 		end
+	end
+	if game.state.game_over == true then
+		if love.keyboard.isDown("w") or love.keyboard.isDown("z") or love.keyboard.isDown("space") then
+			love.event.quit()
+		end
+	end
 end
 
 function love.draw()
@@ -217,6 +233,11 @@ function love.draw()
 		love.graphics.pop()
 		fight.go:sonic_print(i_frame)
 		fight.go:fight_button_print(fight_frame)
+		if game.phase.nb_phase == 1 then
+			for i = 1, #enemies do
+				enemies[i]:draw()
+			end
+		end
 
 		if game.phase.atk == true then
 			fight.go:ft_atk(fight_frame)
@@ -245,5 +266,9 @@ function love.draw()
 			if timer_damage > 7 then
 				love.event.quit()
 			end
+	end
+	if game.state.game_over == true then
+		local game_over_image = love.graphics.newImage("img/game_over.png")
+		love.graphics.draw(game_over_image, 110, 140)
 	end
 end

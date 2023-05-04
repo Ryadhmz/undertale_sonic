@@ -1,23 +1,12 @@
 local love = require "love"
 
-function Enemy_Circle(level)
+function Enemy_Circle(level, x, y, radius)
         local dice = math.random(1, 4)
         local _x, _y
-        local _radius = 20
+        local _radius = radius or 20
 
-        if dice == 1 then
-                _x = math.random(_radius, love.graphics.getWidth())
-                _y = - _radius * 4
-        elseif dice == 2 then
-                _x = - _radius * 4
-                _y = math.random(_radius, love.graphics.getHeight())
-        elseif dice == 3 then
-                _x = math.random(_radius, love.graphics.getWidth())
-                _y = love.graphics.getHeight() + _radius * 4
-        else
-                _x = love.graphics.getWidth() + _radius * 4
-                _y = math.random(_radius, love.graphics.getHeight())
-        end
+        _x = x or 50
+        _y = y or 50
 
         return {
                 level = level or 1,

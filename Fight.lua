@@ -61,7 +61,7 @@ function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 			love.graphics.draw(atk_bar, 50 , love.graphics.getHeight() / 2.5)
 			self.draw_rectangle()
 			love.graphics.line(x_bar, y_bar_top, x_bar, y_bar_down)
-			if (love.keyboard.isDown("z") or love.keyboard.isDown("w") or love.keyboard.isDown("space")) and x_bar > 70 then
+			if (love.keyboard.isDown("z") or love.keyboard.isDown("w") or love.keyboard.isDown("space")) and x_bar > 90 then
 				self:change_phase("dead_sonic")
 			end
 		end,
@@ -116,14 +116,19 @@ function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 				self:sonic_bubble("gl bg")
 			end
 			if timer_fight >= 2 then
-				game.phase.nb_phase = 1
 				self:move_egg()
 			end
-			-- elseif timer_fight >= 2 and timer_fight < 10 then
-			-- end
+			if timer_fight >= 2 and timer_fight <= 8 then
+				game.phase.nb_phase = 1
+			else
+				game.phase.nb_phase = 0
 			end
+			if timer_fight > 8 then
+				self:change_phase("atk")
+			end
+		end
 	}
-	end
+end
 
 
 return Fight_mod
