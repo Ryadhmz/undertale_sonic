@@ -5,13 +5,13 @@ local Fight_mod = require "Fight"
 
 local game = {
 	state = {
-		opening = true,
+		opening = false,
 		menu = false,
-		running = false,
+		running = true,
 		ended = false,
 	},
 	phase = {
-		defense = false,
+		defense = true,
 		atk = false,
 		atk_phase = false,
 		dead_sonic = false,
