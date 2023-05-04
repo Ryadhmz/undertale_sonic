@@ -1,4 +1,7 @@
 local love = require "love"
+local Enemy_Circle = require "Enemy_Circle"
+
+Enemy = {}
 
 function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 	return {
@@ -107,9 +110,7 @@ function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 			end
 			love.graphics.circle("fill", self.x_egg, self.y_egg, self.radius_egg)
 		end,
-		checkCircleTouched = function (self, enemy_x, enemy_y, enemy_radius)
-			return math.sqrt((enemy_x - self.x_egg) ^ 2 + (enemy_y - self.y_egg) ^ 2) <= self.radius_egg + enemy_radius
-		end,
+		
 		fight_scenario = function(self, timer_fight)
 			timer_fight = timer_fight or 1
 			love.graphics.setColor(1, 0, 0)
@@ -118,6 +119,16 @@ function Fight_mod(sonic, game, x_egg, y_egg, radius_egg, egg_speed)
 				self:sonic_bubble("gl bg")
 			end
 			if timer_fight >= 2 then
+				for i = 1, 4 do
+					table.insert(Enemy, 1, Enemy_Circle(i + 1))
+				end
+				for i = 1, 4 do
+					Enemy[i]:move(self.x_egg, self.y_egg)
+					Enemy[i]:draw()
+					if i == 3 then
+						i = 1
+					end
+				end
 				self:move_egg()
 			end
 			-- elseif timer_fight >= 2 and timer_fight < 10 then
